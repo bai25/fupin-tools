@@ -1,0 +1,17 @@
+E:\fp\fupin-tools\fuj\bin\Debug\net8.0-windows\fuj.exe
+E:\fp\fupin-tools\fuj\bin\Debug\net8.0-windows\fuj.deps.json
+E:\fp\fupin-tools\fuj\bin\Debug\net8.0-windows\fuj.runtimeconfig.json
+E:\fp\fupin-tools\fuj\bin\Debug\net8.0-windows\fuj.dll
+E:\fp\fupin-tools\fuj\bin\Debug\net8.0-windows\fuj.pdb
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.Form1.resources
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.csproj.GenerateResource.cache
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.GeneratedMSBuildEditorConfig.editorconfig
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.AssemblyInfoInputs.cache
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.AssemblyInfo.cs
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.csproj.CoreCompileInputs.cache
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.sourcelink.json
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.dll
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\refint\fuj.dll
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.pdb
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\fuj.genruntimeconfig.cache
+E:\fp\fupin-tools\fuj\obj\Debug\net8.0-windows\ref\fuj.dll
