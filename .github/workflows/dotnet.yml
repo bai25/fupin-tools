@@ -1,31 +1,64 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
+name: .NET Windows Forms CI
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
   build:
 
     runs-on: windows-latest
 
+    env:
+      PROJECT_DIR: "fuj"         # 项目目录名称
+      PROJECT_NAME: "fuj.csproj" # 项目文件名称
+      RUNTIME_ID: "win-x64"      # 目标运行时
+
     steps:
+    # 步骤 1：检出代码
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 获取完整提交历史
+
+    # 步骤 2：设置 .NET 环境
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+
+    # 步骤 3：显式指定解决方案恢复（如果存在）
     - name: Restore dependencies
-      run: dotnet restore
-    - name: Publish win-x64
-      run: dotnet publish fuj\fuj.csproj -o Release\win-x64 -r win-x64 --framework net8.0 -p:PublishSingleFile=true
-    - name: Upload win-x64 Build Artifact
-      uses: actions/upload-artifact@v4.3.1
+      working-directory: ${{ env.PROJECT_DIR }}
+      run: |
+        # 如果有解决方案文件则使用（需实际存在）
+        if (Test-Path "..\*.sln") {
+          dotnet restore ..
+        } else {
+          dotnet restore ${{ env.PROJECT_NAME }}
+        }
+
+    # 步骤 4：构建发布包
+    - name: Publish Windows Forms App
+      working-directory: ${{ env.PROJECT_DIR }}
+      run: |
+        dotnet publish ${{ env.PROJECT_NAME }} `
+          -o ../Release/${{ env.RUNTIME_ID }} `
+          -r ${{ env.RUNTIME_ID }} `
+          --framework net8.0 `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:DebugType=None `
+          -p:DebugSymbols=false `
+          --configuration Release
+
+    # 步骤 5：上传构建产物
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
       with:
-        name: fuj-win-64
-        path: Release\win-x64
+        name: windows-forms-app
+        path: |
+          Release/${{ env.RUNTIME_ID }}/*.exe
+          Release/${{ env.RUNTIME_ID }}/*.dll
+        retention-days: 7
