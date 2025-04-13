@@ -7,10 +7,10 @@ on:
     branches: [ main ]
 
 env:
-  SOLUTION_PATH: "fuj/fuj.sln"  # 解决方案文件路径
-  PROJECT_DIR: "fuj"            # 项目目录
-  RUNTIME_ID: "win-x64"         # 目标运行时
+  SOLUTION_PATH: "fuj/fuj.sln"
+  PROJECT_DIR: "fuj"
   BUILD_CONFIGURATION: "Release"
+  RUNTIME_ID: "win-x64"
 
 jobs:
   build:
@@ -18,59 +18,40 @@ jobs:
     timeout-minutes: 15
 
     steps:
-    # 步骤 1：严格检出代码（处理路径大小写）
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        path-check: true  # 强制路径校验
 
-    # 步骤 2：验证目录结构
-    - name: Validate directory structure
-      shell: pwsh
-      run: |
-        if (-not (Test-Path -Path "${{ env.SOLUTION_PATH }}")) {
-          Write-Error "解决方案文件不存在：${{ env.SOLUTION_PATH }}"
-          exit 1
-        }
-        Write-Host "✅ 目录结构验证通过"
-
-    # 步骤 3：安装 .NET SDK（自动包含 Windows 桌面组件）
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
-    # 步骤 4：恢复解决方案依赖
     - name: Restore dependencies
       working-directory: ${{ env.PROJECT_DIR }}
       run: dotnet restore
 
-    # 步骤 5：构建解决方案
+    # 关键修改：使用 Any CPU 平台配合运行时标识符
     - name: Build solution
       working-directory: ${{ env.PROJECT_DIR }}
       run: |
         dotnet build `
           -c ${{ env.BUILD_CONFIGURATION }} `
-          -p:Platform=${{ env.RUNTIME_ID }} `
+          -p:Platform="Any CPU" `
+          -p:RuntimeIdentifier=${{ env.RUNTIME_ID }} `
           --no-restore
 
-    # 步骤 6：发布应用程序
     - name: Publish application
       working-directory: ${{ env.PROJECT_DIR }}
       run: |
         dotnet publish `
           -c ${{ env.BUILD_CONFIGURATION }} `
-          -r ${{ env.RUNTIME_ID }} `
+          -p:Platform="Any CPU" `
+          -p:RuntimeIdentifier=${{ env.RUNTIME_ID }} `
           --self-contained true `
           -p:PublishSingleFile=true `
-          -p:IncludeNativeLibrariesForSelfExtract=true `
-          -p:DebugType=None `
           -o ../publish
 
-    # 步骤 7：上传构建产物
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: windows-app
         path: publish
-        retention-days: 3
