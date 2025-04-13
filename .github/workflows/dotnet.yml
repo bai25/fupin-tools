@@ -7,10 +7,9 @@ on:
     branches: [ main ]
 
 env:
-  SOLUTION_NAME: fuj.sln
-  PROJECT_DIR: fuj
-  RUNTIME_ID: win-x64
+  SOLUTION_NAME: fuj/fuj.sln  # 确保实际文件名完全匹配（包括大小写）
   BUILD_CONFIGURATION: Release
+  RUNTIME_ID: win-x64
 
 jobs:
   build:
@@ -18,50 +17,59 @@ jobs:
     timeout-minutes: 15
 
     steps:
-    # 步骤 1：检出代码
+    # 步骤 1：严格检出代码（处理大小写敏感问题）
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        lfs: true
+        path-check: true  # 启用路径严格校验
 
-    # 步骤 2：安装 .NET 8 SDK（包含 Windows 桌面组件）
-    - name: Setup .NET
+    # 步骤 2：验证代码结构
+    - name: Validate repository structure
+      shell: bash
+      run: |
+        echo "当前目录结构："
+        ls -la
+        echo "检查解决方案文件："
+        if [ ! -f "${{ env.SOLUTION_NAME }}" ]; then
+          echo "::error::解决方案文件 ${{ env.SOLUTION_NAME }} 不存在"
+          exit 1
+        fi
+
+    # 步骤 3：优化 .NET 安装（仅安装 SDK）
+    - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 8.0.x  # 自动包含 Windows 桌面组件
 
-    # 步骤 3：验证工作负载
-    - name: Verify SDK workloads
-      run: dotnet workload list
-
-    # 步骤 4：恢复依赖
+    # 步骤 4：精确路径恢复
     - name: Restore dependencies
-      run: dotnet restore ${{ env.SOLUTION_NAME }}
+      run: dotnet restore "./${{ env.SOLUTION_NAME }}"  # 显式指定路径
 
-    # 步骤 5：构建项目
+    # 步骤 5：构建解决方案
     - name: Build solution
       run: |
-        dotnet build ${{ env.SOLUTION_NAME }} `
+        dotnet build "./${{ env.SOLUTION_NAME }}" `
           -c ${{ env.BUILD_CONFIGURATION }} `
           -p:Platform=${{ env.RUNTIME_ID }} `
           --no-restore
 
     # 步骤 6：发布应用
     - name: Publish application
-      working-directory: ${{ env.PROJECT_DIR }}
       run: |
-        dotnet publish ${{ env.SOLUTION_NAME }} `
+        dotnet publish "./${{ env.SOLUTION_NAME }}" `
           -c ${{ env.BUILD_CONFIGURATION }} `
           -r ${{ env.RUNTIME_ID }} `
           --self-contained true `
           -p:PublishSingleFile=true `
           -p:IncludeNativeLibrariesForSelfExtract=true `
           -p:DebugType=None `
-          -o ../publish
+          -o ./publish
 
     # 步骤 7：上传产物
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: windows-app
-        path: |
-          publish/*.exe
-          publish/*.dll
-        retention-days: 7
+        path: ./publish
+        retention-days: 3
