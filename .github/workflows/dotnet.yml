@@ -7,8 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  SOLUTION_PATH: "fuj/fuj.sln"
-  PROJECT_DIR: "fuj"
+  PROJECT_PATH: "fuj/fuj.csproj"  # 指向具体的项目文件
   BUILD_CONFIGURATION: "Release"
   RUNTIME_ID: "win-x64"
 
@@ -23,35 +22,28 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 8.0.x  # 确保与项目目标框架一致
 
     - name: Restore dependencies
-      working-directory: ${{ env.PROJECT_DIR }}
-      run: dotnet restore
+      run: dotnet restore ${{ env.PROJECT_PATH }}
 
-    # 关键修改：使用 Any CPU 平台配合运行时标识符
-    - name: Build solution
-      working-directory: ${{ env.PROJECT_DIR }}
+    - name: Build project
       run: |
-        dotnet build `
-          -c ${{ env.BUILD_CONFIGURATION }} `
-          -p:Platform="Any CPU" `
-          -p:RuntimeIdentifier=${{ env.RUNTIME_ID }} `
+        dotnet build ${{ env.PROJECT_PATH }} \
+          -c ${{ env.BUILD_CONFIGURATION }} \
           --no-restore
 
     - name: Publish application
-      working-directory: ${{ env.PROJECT_DIR }}
       run: |
-        dotnet publish `
-          -c ${{ env.BUILD_CONFIGURATION }} `
-          -p:Platform="Any CPU" `
-          -p:RuntimeIdentifier=${{ env.RUNTIME_ID }} `
-          --self-contained true `
-          -p:PublishSingleFile=true `
-          -o ../publish
+        dotnet publish ${{ env.PROJECT_PATH }} \
+          -c ${{ env.BUILD_CONFIGURATION }} \
+          -r ${{ env.RUNTIME_ID }} \
+          --self-contained true \
+          -p:PublishSingleFile=true \
+          -o ./publish
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: windows-app
-        path: publish
+        path: ./publish
