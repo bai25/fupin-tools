@@ -1,64 +1,68 @@
-name: .NET Windows Forms CI
+name: Windows Forms CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
+env:
+  SOLUTION_NAME: fuj.sln
+  PROJECT_NAME: fuj.csproj
+  RUNTIME_ID: win-x64
+  BUILD_CONFIGURATION: Release
+
 jobs:
   build:
-
     runs-on: windows-latest
-
-    env:
-      PROJECT_DIR: "fuj"         # 项目目录名称
-      PROJECT_NAME: "fuj.csproj" # 项目文件名称
-      RUNTIME_ID: "win-x64"      # 目标运行时
+    timeout-minutes: 15
 
     steps:
     # 步骤 1：检出代码
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # 获取完整提交历史
 
-    # 步骤 2：设置 .NET 环境
+    # 步骤 2：安装 .NET 和 Windows 桌面工作负载
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: |
+          8.0.x
+        include-prerelease: false
 
-    # 步骤 3：显式指定解决方案恢复（如果存在）
+    - name: Install Windows Desktop SDK
+      run: dotnet workload install windowsdesktop
+
+    # 步骤 3：解决方案级恢复
     - name: Restore dependencies
-      working-directory: ${{ env.PROJECT_DIR }}
-      run: |
-        # 如果有解决方案文件则使用（需实际存在）
-        if (Test-Path "..\*.sln") {
-          dotnet restore ..
-        } else {
-          dotnet restore ${{ env.PROJECT_NAME }}
-        }
+      run: dotnet restore ${{ env.SOLUTION_NAME }}
 
-    # 步骤 4：构建发布包
-    - name: Publish Windows Forms App
-      working-directory: ${{ env.PROJECT_DIR }}
+    # 步骤 4：构建解决方案
+    - name: Build Solution
+      run: |
+        dotnet build ${{ env.SOLUTION_NAME }} `
+          -c ${{ env.BUILD_CONFIGURATION }} `
+          -p:Platform=x64 `
+          --no-restore
+
+    # 步骤 5：发布应用程序
+    - name: Publish Application
+      working-directory: fuj
       run: |
         dotnet publish ${{ env.PROJECT_NAME }} `
-          -o ../Release/${{ env.RUNTIME_ID }} `
+          -c ${{ env.BUILD_CONFIGURATION }} `
           -r ${{ env.RUNTIME_ID }} `
-          --framework net8.0 `
+          --self-contained true `
           -p:PublishSingleFile=true `
           -p:IncludeNativeLibrariesForSelfExtract=true `
           -p:DebugType=None `
-          -p:DebugSymbols=false `
-          --configuration Release
+          -o ../publish
 
-    # 步骤 5：上传构建产物
+    # 步骤 6：上传构建产物
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: windows-forms-app
+        name: windows-app
         path: |
-          Release/${{ env.RUNTIME_ID }}/*.exe
-          Release/${{ env.RUNTIME_ID }}/*.dll
+          publish/*.exe
+          publish/*.dll
         retention-days: 7
