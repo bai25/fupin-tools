@@ -19,25 +19,25 @@ namespace fuj
 
         private void InitializeApplication()
         {
-            // °ó¶¨ÊÂ¼ş´¦ÀíÆ÷
+            // ç»‘å®šäº‹ä»¶å¤„ç†å™¨
             this.Load += Form1_Load;
             this.button1.Click += Button1_Click;
 
-            // ³õÊ¼×´Ì¬¼ì²é
+            // åˆå§‹çŠ¶æ€æ£€æŸ¥
             CheckAdminStatus();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // ´°Ìå¼ÓÔØÊ±µÄ³õÊ¼»¯Âß¼­
-            labelStatus.Text = "¾ÍĞ÷";
+            // çª—ä½“åŠ è½½æ—¶çš„åˆå§‹åŒ–é€»è¾‘
+            labelStatus.Text = "å°±ç»ª";
         }
 
         private void CheckAdminStatus()
         {
             if (!IsAdministrator())
             {
-                labelStatus.Text = "? ÇëÒÔ¹ÜÀíÔ±Éí·İÔËĞĞ±¾³ÌĞò";
+                labelStatus.Text = "? è¯·ä»¥ç®¡ç†å‘˜èº«ä»½è¿è¡Œæœ¬ç¨‹åº";
                 button1.Enabled = false;
             }
         }
@@ -54,16 +54,16 @@ namespace fuj
                 if (ModifyHostsFile(hostsPath))
                 {
                     RefreshDnsCache();
-                    labelStatus.Text = "? ĞŞ¸Ä³É¹¦£¡";
+                    labelStatus.Text = "? ä¿®æ”¹æˆåŠŸï¼";
                 }
             }
             catch (Exception ex)
             {
-                ShowErrorDialog($"²Ù×÷Ê§°Ü: {ex.Message}");
+                ShowErrorDialog($"æ“ä½œå¤±è´¥: {ex.Message}");
             }
         }
 
-        #region ºËĞÄ¹¦ÄÜ·½·¨
+        #region æ ¸å¿ƒåŠŸèƒ½æ–¹æ³•
         private string GetHostsPath()
         {
             return Path.Combine(
@@ -75,7 +75,7 @@ namespace fuj
         {
             string backupPath = $"{hostsPath}.{DateTime.Now:yyyyMMddHHmmss}.bak";
             File.Copy(hostsPath, backupPath, true);
-            labelStatus.Text = $"ÒÑ´´½¨±¸·İ: {Path.GetFileName(backupPath)}";
+            labelStatus.Text = $"å·²åˆ›å»ºå¤‡ä»½: {Path.GetFileName(backupPath)}";
         }
 
         private bool ModifyHostsFile(string hostsPath)
@@ -85,7 +85,7 @@ namespace fuj
 
             using (var writer = File.AppendText(hostsPath))
             {
-                writer.WriteLine($"\n# Modified by FujTool {DateTime.Now}");
+                writer.WriteLine($"\n# Modified by Tool {DateTime.Now}");
                 writer.WriteLine($"{RedirectIP}\t{TargetDomain}");
             }
             return true;
@@ -127,7 +127,7 @@ namespace fuj
         }
         #endregion
 
-        #region ¸¨Öú·½·¨
+        #region è¾…åŠ©æ–¹æ³•
         private static bool IsAdministrator()
         {
             using (var identity = WindowsIdentity.GetCurrent())
@@ -141,7 +141,7 @@ namespace fuj
         {
             MessageBox.Show(this,
                 message,
-                "´íÎó",
+                "é”™è¯¯",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
         }
